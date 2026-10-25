@@ -46,7 +46,9 @@ function distance(a,b){a=kana(a);b=kana(b);let dp=Array.from({length:a.length+1}
 function allNames(){return[...new Set(state.events.flatMap(e=>e.days.flatMap(d=>d.researches.flatMap(r=>r.pokemon.map(p=>p.name)))))].sort((a,b)=>a.localeCompare(b,'ja'))}
 function masterNames(){return sortByDex([...new Set([...pokemonMaster,...allNames()])])}
 function nameSuggestions(q,limit=10){let b=kana(String(q||'').trim());if(!b)return[];return masterNames().map(n=>({name:n,score:kana(n).startsWith(b)?0:kana(n).includes(b)?1:distance(n,q)})).filter(x=>x.score<=Math.max(1,Math.ceil(b.length/3))).sort((a,b)=>a.score-b.score||a.name.localeCompare(b.name,'ja')).slice(0,limit).map(x=>x.name)}
-function bestPokemonName(name){let clean=String(name||'').trim();if(!clean)return'';let exact=masterNames().find(n=>kana(n)===kana(clean));if(exact)return exact;let s=nameSuggestions(clean,1)[0];return s&&distance(s,clean)<=2?s:clean}
+const pokemonNameLookup=new Map();
+sortByDex(pokemonMaster).forEach(name=>{let key=kana(name);if(!pokemonNameLookup.has(key))pokemonNameLookup.set(key,name)});
+function bestPokemonName(name){let clean=String(name||'').trim();if(!clean)return'';let key=kana(clean),known=pokemonNameLookup.get(key);if(known)return known;let exact=masterNames().find(n=>kana(n)===key);if(exact)return exact;let s=nameSuggestions(clean,1)[0];return s&&distance(s,clean)<=2?s:clean}
 function eventNames(e=curEvent()){return e?[...new Set(e.days.flatMap(d=>d.researches.flatMap(r=>r.pokemon.map(p=>p.name))))].sort((a,b)=>a.localeCompare(b,'ja')):[]}
 function islandNames(e=curEvent()){if(!e)return[];let tags=e.days?.[activeDay]?.tags||[],names=[...(pokemonIslandMaster[e.island]||[])];if(tags.includes('NMD'))names.push('ダークライ');if(tags.includes('GSD'))names.push('ミュウ');return [...new Set(names)]}
 function choiceNames(tab=choiceTab){if(!tab)return[];if(tab==='island')return sortByDex(islandNames());if(tab==='favorites')return sortByDex(state.favorites||[]);if(tab==='event')return sortByDex(eventNames());return masterNames()}
