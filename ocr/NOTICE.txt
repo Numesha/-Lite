@@ -1,0 +1,9 @@
+OCR dependencies, loaded only when screenshot recognition is requested:
+
+Tesseract.js 7.0.0 (Apache-2.0): https://github.com/naptha/tesseract.js
+Tesseract.js-core 7.0.0 (Apache-2.0): https://github.com/naptha/tesseract.js-core
+Japanese traineddata downloaded by Tesseract.js createWorker('jpn').
+Tesseract language data (Apache-2.0): https://github.com/tesseract-ocr/tessdata
+
+Recognition runs locally. No screenshot upload or external runtime download is used.
+Keep the ocr directory and screenshot-ocr.js alongside index.html when deploying.
