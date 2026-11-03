@@ -104,11 +104,17 @@ function imageOcrResolve(rawName,preview){
 }
 function imageOcrHasTypeBadge(img,lineY){
   let w=img.naturalWidth,h=img.naturalHeight,scale=Math.round(w*.69)/1400,y=Math.round(h*.13)+lineY*scale;
-  let canvas=document.createElement('canvas');canvas.width=120;canvas.height=40;
-  let ctx=canvas.getContext('2d');ctx.drawImage(img,w*.245,Math.max(0,y-w*.12),w*.23,w*.085,0,0,120,40);
-  let pixels=ctx.getImageData(0,0,120,40).data,count=0;
-  for(let i=0;i<pixels.length;i+=4){let r=pixels[i],g=pixels[i+1],b=pixels[i+2];if((r>200&&g>180&&b<170)||(r<180&&g>200&&b>190))count++}
-  canvas.width=canvas.height=1;return count>120*40*.04;
+  let canvas=document.createElement('canvas');canvas.width=180;canvas.height=40;
+  let ctx=canvas.getContext('2d');ctx.drawImage(img,w*.245,Math.max(0,y-w*.12),w*.395,w*.085,0,0,180,40);
+  let pixels=ctx.getImageData(0,0,180,40).data,left=[0,0,0],right=[0,0,0];
+  for(let i=0;i<pixels.length;i+=4){
+    let x=(i/4)%180,r=pixels[i],g=pixels[i+1],b=pixels[i+2];
+    let color=r>200&&g>180&&b<170?0:r<180&&g>200&&b>190?1:b>180&&b>r+45&&b>g+35?2:-1;
+    if(color>=0){if(x<105)left[color]++;else if(x>=145)right[color]++}
+  }
+  // A sleep badge ends before the stars; the full-width blue date header does not.
+  canvas.width=canvas.height=1;
+  return left.some((count,color)=>count/(105*40)>.04&&right[color]/(35*40)<count/(105*40)*.7);
 }
 async function imageOcrReadGroup(group,worker,token){
   let img=new Image();img.src=group.url;
